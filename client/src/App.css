@@ -66,6 +66,54 @@
   font-size: 1.1rem;
 }
 
+.btn-danger {
+  background: #c62828;
+  color: #fff;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.875rem;
+  border-radius: 6px;
+}
+
+.btn:hover:not(:disabled) {
+  filter: brightness(0.94);
+}
+
+.btn:focus-visible {
+  outline: 2px solid #2e7d32;
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.alert {
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.alert-error {
+  background: #fdecea;
+  border: 1px solid #f3c2bd;
+  color: #b3261e;
+}
+
+.alert-success {
+  background: #e6f7e9;
+  border: 1px solid #b7e0c0;
+  color: #2e7d32;
+}
+
+.loading {
+  color: #555;
+  padding: 0.75rem 0;
+}
+
 .badge {
   display: inline-block;
   border-radius: 999px;
@@ -291,6 +339,40 @@
   margin-top: 0.5rem;
 }
 
+.admin-note {
+  margin-bottom: 1.25rem;
+  color: #555;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.admin-filter {
+  margin-bottom: 0;
+  min-width: 14rem;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #eee;
+  padding-top: 0.75rem;
+}
+
+.admin-status-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
 @media (max-width: 600px) {
   .nav {
     gap: 0.75rem;
@@ -320,5 +402,15 @@
 
   .reports-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-filter {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-actions {
+    align-items: stretch;
+    justify-content: flex-start;
   }
 }
