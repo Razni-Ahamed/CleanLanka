@@ -84,6 +84,22 @@ inside the token, so revoking or demoting an account takes effect immediately.
 | `PATCH /api/reports/:id` | Admin only |
 | `DELETE /api/reports/:id` | Admin only |
 
+### Creating admins
+
+`npm run seed` creates the first admin, but it clears both collections first, so
+it is only safe on an empty database. To add or promote an admin without losing
+data — which is what you want in production — use:
+
+```bash
+cd server
+npm run make-admin -- someone@council.lk                      # promote an existing account
+npm run make-admin -- someone@council.lk "a password" "Name"  # create a new admin
+```
+
+Do not create a user by hand in the Atlas UI. The password would be stored as
+plain text and could never match on login, since only the model's save hook
+hashes it.
+
 Reporting stays open to everyone: residents should be able to flag a problem
 without signing up first. A signed-in reporter simply gets their name as the
 default byline and is linked to the report, and can still clear the name field
@@ -164,6 +180,74 @@ npm run dev
 ```
 
 The app runs at `http://localhost:5173`.
+
+## Deployment (Vercel)
+
+The client and the server deploy as **two separate Vercel projects** from this
+one repository. Each has its own `vercel.json` already committed.
+
+### 1. Allow Vercel to reach MongoDB Atlas
+
+In Atlas → **Network Access**, allow `0.0.0.0/0`. Vercel's functions get
+dynamic IPs, so an allowlist limited to your own machine will make every
+deployed request fail at the database.
+
+### 2. Deploy the server
+
+Create a new Vercel project from this repo and set **Root Directory** to
+`server`. Leave the build and output settings empty — there is no build step;
+`server/vercel.json` routes every request into `api/index.js`.
+
+Add these environment variables:
+
+| Variable | Value |
+| --- | --- |
+| `MONGO_URI` | your Atlas connection string |
+| `JWT_SECRET` | a long random string — do not reuse the local one |
+| `JWT_EXPIRES_IN` | `7d` (optional) |
+| `CLIENT_ORIGIN` | filled in at step 4 |
+
+Deploy, then check `https://<your-server>.vercel.app/api/health` returns
+`{"ok":true}`.
+
+### 3. Deploy the client
+
+Create a second project from the same repo with **Root Directory** set to
+`client`. Vercel detects Vite automatically.
+
+| Variable | Value |
+| --- | --- |
+| `VITE_API_URL` | the server URL from step 2, no trailing slash |
+| `VITE_CLOUDINARY_CLOUD_NAME` | your Cloudinary cloud name |
+| `VITE_CLOUDINARY_PRESET` | your unsigned upload preset |
+
+`VITE_*` values are read at **build time**, not runtime. Setting one after a
+deploy has no effect until you redeploy.
+
+### 4. Point the server back at the client
+
+Set `CLIENT_ORIGIN` on the server project to the client's URL, then redeploy the
+server so CORS is limited to your own site instead of allowing any origin.
+
+### 5. Create the production admin
+
+Run this locally with `MONGO_URI` temporarily pointed at your production
+database — it cannot run on Vercel:
+
+```bash
+cd server
+npm run make-admin -- admin@yourcouncil.lk "a strong password" "Municipal Admin"
+```
+
+Use `npm run seed` instead only if the database is empty and you also want the
+sample reports, since seeding deletes all existing reports and users.
+
+### 6. Check it end to end
+
+Sign in on the deployed client, confirm the **Admin** link appears, and change a
+report's status. Then sign out and open `/admin` directly — you should be sent
+to the login page rather than seeing a 404, which confirms the SPA rewrite is
+live.
 
 ## Deployed application
 

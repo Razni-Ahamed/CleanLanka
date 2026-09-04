@@ -1,6 +1,15 @@
 const User = require('../models/User');
 const { verifyToken } = require('../utils/token');
 
+// Errors jsonwebtoken raises for a token that is malformed, expired or signed
+// with the wrong key. Anything else is a real fault and must not be reported
+// as a bad session.
+const TOKEN_ERRORS = ['JsonWebTokenError', 'TokenExpiredError', 'NotBeforeError'];
+
+function isTokenError(err) {
+  return TOKEN_ERRORS.includes(err.name);
+}
+
 function readBearerToken(req) {
   const header = req.headers.authorization || '';
   if (!header.startsWith('Bearer ')) return '';
@@ -31,7 +40,9 @@ async function protect(req, res, next) {
 
     req.user = user;
     next();
-  } catch {
+  } catch (err) {
+    if (!isTokenError(err)) return next(err);
+
     return res.status(401).json({ error: 'Your session has expired. Please sign in again.' });
   }
 }
@@ -46,8 +57,10 @@ async function optionalAuth(req, res, next) {
   try {
     const user = await resolveUser(token);
     if (user) req.user = user;
-  } catch {
-    // An invalid or expired token is treated as anonymous on public routes.
+  } catch (err) {
+    // An invalid or expired token is treated as anonymous on public routes,
+    // but a genuine fault should still surface rather than be swallowed.
+    if (!isTokenError(err)) return next(err);
   }
 
   next();
