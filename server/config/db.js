@@ -1,9 +1,5 @@
 const mongoose = require('mongoose');
 
-// On Vercel the backend runs as a serverless function, so this module is
-// re-evaluated on every cold start. Caching the connection on globalThis keeps
-// one connection per container instead of opening a new one per request, which
-// would quickly exhaust the Atlas free-tier connection limit.
 let cached = globalThis._mongoose;
 
 if (!cached) {
@@ -29,7 +25,6 @@ async function connectDB() {
   try {
     cached.conn = await cached.promise;
   } catch (err) {
-    // Don't cache a failed attempt, or every later request reuses the failure.
     cached.promise = null;
     throw err;
   }

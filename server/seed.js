@@ -1,5 +1,3 @@
-// Populates the database with sample reports so the app has realistic data to
-// demo and filter against. Run with: npm run seed
 require('dotenv').config();
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');

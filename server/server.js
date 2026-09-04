@@ -1,4 +1,3 @@
-// Local development entry point. On Vercel, api/index.js is used instead.
 require('dotenv').config();
 const app = require('./app');
 const connectDB = require('./config/db');

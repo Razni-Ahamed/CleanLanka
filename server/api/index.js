@@ -1,6 +1,3 @@
-// Vercel serverless entry point. Vercel auto-detects files under api/ as
-// functions, and vercel.json rewrites every path here so Express does the
-// routing itself.
 require('dotenv').config();
 const app = require('../app');
 const connectDB = require('../config/db');
