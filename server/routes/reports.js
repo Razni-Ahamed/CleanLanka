@@ -4,9 +4,52 @@ const Report = require('../models/Report');
 const router = express.Router();
 
 const STATUSES = ['pending', 'in-progress', 'collected'];
+const WASTE_TYPES = ['Household', 'Plastic', 'Organic', 'Other'];
 
-router.post('/', (req, res) => {
-  res.status(501).json({ error: 'Not implemented yet' });
+router.post('/', async (req, res, next) => {
+  const { location, wasteType, description, imageUrl, reportedBy } = req.body;
+  const errors = [];
+
+  const trimmedLocation = typeof location === 'string' ? location.trim() : '';
+  if (!trimmedLocation) {
+    errors.push('Please tell us where the problem is.');
+  }
+
+  if (!wasteType || !WASTE_TYPES.includes(wasteType)) {
+    errors.push(`Please choose a valid waste type: ${WASTE_TYPES.join(', ')}.`);
+  }
+
+  const trimmedDescription = typeof description === 'string' ? description.trim() : '';
+  if (!trimmedDescription) {
+    errors.push('Please describe the problem.');
+  } else if (trimmedDescription.length > 300) {
+    errors.push('Please keep the description under 300 characters.');
+  }
+
+  if (imageUrl && (typeof imageUrl !== 'string' || !imageUrl.startsWith('http'))) {
+    errors.push('The photo link looks invalid.');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({ error: errors.join(' ') });
+  }
+
+  const trimmedReportedBy =
+    typeof reportedBy === 'string' && reportedBy.trim() ? reportedBy.trim() : 'Anonymous';
+
+  try {
+    const report = await Report.create({
+      location: trimmedLocation,
+      wasteType,
+      description: trimmedDescription,
+      imageUrl: imageUrl || '',
+      reportedBy: trimmedReportedBy,
+    });
+
+    res.status(201).json(report);
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get('/stats', async (req, res, next) => {
