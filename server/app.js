@@ -1,8 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
 const reportsRouter = require('./routes/reports');
 const authRouter = require('./routes/auth');
+const openapiSpec = require('./docs/openapi');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -23,6 +25,7 @@ app.use(
 app.use(express.json());
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(openapiSpec));
 app.use('/api/auth', authRouter);
 app.use('/api/reports', reportsRouter);
 
