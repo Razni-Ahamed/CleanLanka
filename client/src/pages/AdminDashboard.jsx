@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import ReportCard from '../components/ReportCard';
 
 const STATUS_OPTIONS = [
@@ -9,6 +10,7 @@ const STATUS_OPTIONS = [
 ];
 
 function AdminDashboard() {
+  const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -141,8 +143,9 @@ function AdminDashboard() {
       <h1>Admin Dashboard</h1>
 
       <p className="admin-note">
-        Municipal staff view for tracking and updating reported issues. This
-        prototype has no login, so anyone with the link can update a status.
+        Municipal staff view for tracking and updating reported issues. Signed
+        in as {user.name} ({user.email}). Status changes and deletions are
+        recorded against staff accounts only.
       </p>
 
       <div className="stats-grid">

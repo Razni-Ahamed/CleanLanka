@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 const WASTE_TYPES = ['Household', 'Plastic', 'Organic', 'Other'];
 const DESCRIPTION_LIMIT = 300;
@@ -8,11 +9,14 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 function ReportForm() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [location, setLocation] = useState('');
   const [wasteType, setWasteType] = useState('');
   const [description, setDescription] = useState('');
-  const [reportedBy, setReportedBy] = useState('');
+  // Signed-in reporters get their name as the default byline but can clear it
+  // to post anonymously, so reporting never requires an account.
+  const [reportedBy, setReportedBy] = useState(user ? user.name : '');
 
   const [imagePreview, setImagePreview] = useState('');
   const [imageUrl, setImageUrl] = useState('');

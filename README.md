@@ -28,8 +28,10 @@ time.
 - Citizen report submission (location, waste type, description, optional
   photo)
 - Shared, browsable list of all reports
+- Accounts with email + password sign-in, separating residents from council
+  staff
 - Admin dashboard for council staff to update report status
-  (pending / in progress / collected)
+  (pending / in progress / collected), reachable only by staff accounts
 - Live impact stats on the landing page (totals by status, most-affected
   areas)
 - Responsive UI that works down to mobile widths
@@ -40,6 +42,7 @@ time.
 - React Router
 - Axios
 - Node.js + Express
+- JSON Web Tokens + bcrypt (authentication)
 - MongoDB Atlas + Mongoose
 - Cloudinary (image uploads)
 - Vercel (deployment)
@@ -58,6 +61,33 @@ time.
 - **Amalki** — project setup, landing page, impact stats API, navigation &
   responsive shell, documentation
 - _(add remaining members here)_
+
+## Authentication
+
+Two roles exist: `citizen` and `admin`. Signing up always creates a `citizen`
+— the role is never read from the request body — so admin accounts can only be
+made by the seed script, directly in the database, or by promoting a user there.
+
+Passwords are hashed with bcrypt and never stored or returned in plain text.
+Signing in returns a JSON Web Token that the client keeps in `localStorage` and
+sends as an `Authorization: Bearer <token>` header. On every protected request
+the server re-reads the account from the database rather than trusting the role
+inside the token, so revoking or demoting an account takes effect immediately.
+
+| Endpoint | Access |
+| --- | --- |
+| `POST /api/auth/register` | Public |
+| `POST /api/auth/login` | Public |
+| `GET /api/auth/me` | Signed in |
+| `POST /api/reports` | Public — reporting deliberately needs no account |
+| `GET /api/reports`, `/stats`, `/:id` | Public |
+| `PATCH /api/reports/:id` | Admin only |
+| `DELETE /api/reports/:id` | Admin only |
+
+Reporting stays open to everyone: residents should be able to flag a problem
+without signing up first. A signed-in reporter simply gets their name as the
+default byline and is linked to the report, and can still clear the name field
+to post anonymously.
 
 ## Installation and execution
 
@@ -85,12 +115,23 @@ Edit `server/.env` and set:
 
 - `MONGO_URI` — your MongoDB Atlas connection string
 - `PORT` — defaults to `5000`
+- `JWT_SECRET` — a long random string used to sign login tokens. Generate one
+  with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`
+- `JWT_EXPIRES_IN` — how long a session lasts, defaults to `7d`
+- `CLIENT_ORIGIN` — comma-separated list of sites allowed to call the API.
+  Leave unset to allow any origin (fine locally; set it in production)
+- `SEED_ADMIN_NAME`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` — the staff
+  account created by `npm run seed`
 
-Seed the database with sample data (optional but recommended):
+Seed the database with sample reports and accounts. This is the only way an
+admin account gets created, so it is required rather than optional:
 
 ```bash
 npm run seed
 ```
+
+That creates the admin account from your `SEED_ADMIN_*` values, plus a demo
+citizen account (`citizen@cleanlk.lk` / `citizen12345`).
 
 Start the backend:
 

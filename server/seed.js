@@ -2,6 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 const Report = require('./models/Report');
+const User = require('./models/User');
 
 const daysAgo = (days) => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
@@ -100,6 +101,38 @@ const sampleReports = [
   },
 ];
 
+async function seedUsers() {
+  const removed = await User.deleteMany({});
+  console.log(`Cleared ${removed.deletedCount} existing users`);
+
+  const adminEmail = process.env.SEED_ADMIN_EMAIL;
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+
+  if (!adminEmail || !adminPassword) {
+    throw new Error(
+      'SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD must be set. See server/.env.example.'
+    );
+  }
+
+  // Created through User.create so the password-hashing hook runs — insertMany
+  // would skip it and store the passwords in plain text.
+  await User.create({
+    name: process.env.SEED_ADMIN_NAME || 'Municipal Admin',
+    email: adminEmail,
+    password: adminPassword,
+    role: 'admin',
+  });
+
+  await User.create({
+    name: 'Dilani P.',
+    email: 'citizen@cleanlk.lk',
+    password: 'citizen12345',
+    role: 'citizen',
+  });
+
+  console.log(`Seeded admin (${adminEmail}) and demo citizen (citizen@cleanlk.lk)`);
+}
+
 async function seed() {
   try {
     await connectDB();
@@ -110,6 +143,8 @@ async function seed() {
 
     const inserted = await Report.insertMany(sampleReports);
     console.log(`Seeded ${inserted.length} reports`);
+
+    await seedUsers();
   } catch (err) {
     console.error('Seed failed:', err.message);
     process.exitCode = 1;
