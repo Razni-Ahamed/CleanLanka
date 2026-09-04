@@ -88,12 +88,61 @@ router.get('/stats', async (req, res, next) => {
   }
 });
 
-router.get('/', (req, res) => {
-  res.status(501).json({ error: 'Not implemented yet' });
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+router.get('/', async (req, res, next) => {
+  try {
+    const { status, area, wasteType, search } = req.query;
+    const filter = {};
+
+    if (status) {
+      if (!STATUSES.includes(status)) {
+        return res.status(400).json({
+          error: `Please choose a valid status: ${STATUSES.join(', ')}.`,
+        });
+      }
+      filter.status = status;
+    }
+
+    if (wasteType) {
+      if (!WASTE_TYPES.includes(wasteType)) {
+        return res.status(400).json({
+          error: `Please choose a valid waste type: ${WASTE_TYPES.join(', ')}.`,
+        });
+      }
+      filter.wasteType = wasteType;
+    }
+
+    if (area) {
+      filter.location = new RegExp(escapeRegex(area), 'i');
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(escapeRegex(search), 'i');
+      filter.$or = [{ location: searchRegex }, { description: searchRegex }];
+    }
+
+    const reports = await Report.find(filter).sort({ createdAt: -1 });
+    res.json(reports);
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get('/:id', (req, res) => {
-  res.status(501).json({ error: 'Not implemented yet' });
+router.get('/:id', async (req, res, next) => {
+  try {
+    const report = await Report.findById(req.params.id);
+
+    if (!report) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    res.json(report);
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.patch('/:id', async (req, res, next) => {
