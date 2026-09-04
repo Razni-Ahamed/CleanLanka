@@ -12,8 +12,13 @@ function errorHandler(err, req, res, next) {
     return res.status(400).json({ error: message });
   }
 
+  // Raised by the unique index on User.email when an address is already taken.
+  if (err.code === 11000) {
+    return res.status(409).json({ error: 'An account with that email already exists.' });
+  }
+
   if (err.name === 'CastError') {
-    return res.status(400).json({ error: 'Invalid report ID' });
+    return res.status(400).json({ error: 'Invalid ID' });
   }
 
   const status = err.statusCode || 500;

@@ -1,12 +1,13 @@
 const express = require('express');
 const Report = require('../models/Report');
+const { protect, optionalAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
 const STATUSES = ['pending', 'in-progress', 'collected'];
 const WASTE_TYPES = ['Household', 'Plastic', 'Organic', 'Other'];
 
-router.post('/', async (req, res, next) => {
+router.post('/', optionalAuth, async (req, res, next) => {
   const { location, wasteType, description, imageUrl, reportedBy } = req.body;
   const errors = [];
 
@@ -34,8 +35,12 @@ router.post('/', async (req, res, next) => {
     return res.status(400).json({ error: errors.join(' ') });
   }
 
+  // Reporting stays open to everyone. A signed-in reporter gets their name as
+  // the default byline and is linked to the report, but may still post under
+  // any label they choose.
+  const fallbackReportedBy = req.user ? req.user.name : 'Anonymous';
   const trimmedReportedBy =
-    typeof reportedBy === 'string' && reportedBy.trim() ? reportedBy.trim() : 'Anonymous';
+    typeof reportedBy === 'string' && reportedBy.trim() ? reportedBy.trim() : fallbackReportedBy;
 
   try {
     const report = await Report.create({
@@ -44,6 +49,7 @@ router.post('/', async (req, res, next) => {
       description: trimmedDescription,
       imageUrl: imageUrl || '',
       reportedBy: trimmedReportedBy,
+      user: req.user ? req.user._id : null,
     });
 
     res.status(201).json(report);
@@ -145,7 +151,7 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-router.patch('/:id', async (req, res, next) => {
+router.patch('/:id', protect, requireAdmin, async (req, res, next) => {
   try {
     const { status } = req.body;
 
@@ -171,7 +177,7 @@ router.patch('/:id', async (req, res, next) => {
   }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', protect, requireAdmin, async (req, res, next) => {
   try {
     const report = await Report.findByIdAndDelete(req.params.id);
 
