@@ -1,8 +1,9 @@
 .nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  padding: 1rem;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid #ddd;
 }
 
@@ -16,10 +17,155 @@
   color: #2e7d32;
 }
 
+.nav-brand {
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-right: auto;
+}
+
 .page {
   max-width: 960px;
   margin: 0 auto;
   padding: 1.5rem;
+}
+
+/* Shared building blocks — reuse these instead of inventing new ones */
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background: #fff;
+}
+
+.btn {
+  display: inline-block;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.1rem;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn-primary {
+  background: #2e7d32;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #eef1ee;
+  color: #1a1a1a;
+}
+
+.btn-large {
+  padding: 0.85rem 1.75rem;
+  font-size: 1.1rem;
+}
+
+.badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge-pending {
+  background: #fff4e5;
+  color: #ad6800;
+}
+
+.badge-progress {
+  background: #e6f0ff;
+  color: #1451b4;
+}
+
+.badge-collected {
+  background: #e6f7e9;
+  color: #2e7d32;
+}
+
+.form-group {
+  margin-bottom: 1.1rem;
+  text-align: left;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 6rem;
+}
+
+/* Landing page */
+
+.hero {
+  text-align: center;
+  padding: 2.5rem 1rem 3rem;
+}
+
+.hero-tagline {
+  font-size: 1.15rem;
+  max-width: 40rem;
+  margin: 1rem auto 1.75rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 8px;
+  background: #f4f3ec;
+  padding: 1rem 0.5rem;
+}
+
+.stat-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.top-areas ul {
+  padding-left: 1.25rem;
+}
+
+.steps {
+  padding-left: 1.25rem;
+}
+
+.steps li {
+  margin-bottom: 0.75rem;
 }
 
 @media (max-width: 600px) {
@@ -30,5 +176,13 @@
 
   .page {
     padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero {
+    padding: 1.75rem 0.5rem 2rem;
   }
 }
