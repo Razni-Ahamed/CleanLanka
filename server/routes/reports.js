@@ -9,8 +9,40 @@ router.post('/', (req, res) => {
   res.status(501).json({ error: 'Not implemented yet' });
 });
 
-router.get('/stats', (req, res) => {
-  res.status(501).json({ error: 'Not implemented yet' });
+router.get('/stats', async (req, res, next) => {
+  try {
+    const statusCounts = await Report.aggregate([
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ]);
+
+    const counts = { pending: 0, 'in-progress': 0, collected: 0 };
+    let total = 0;
+    statusCounts.forEach(({ _id, count }) => {
+      if (_id in counts) counts[_id] = count;
+      total += count;
+    });
+
+    const topAreasResult = await Report.aggregate([
+      { $group: { _id: '$location', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]);
+
+    const topAreas = topAreasResult.map(({ _id, count }) => ({
+      area: _id,
+      count,
+    }));
+
+    res.json({
+      total,
+      pending: counts.pending,
+      inProgress: counts['in-progress'],
+      collected: counts.collected,
+      topAreas,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get('/', (req, res) => {
